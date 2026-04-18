@@ -62,7 +62,7 @@ export default function DashboardOverview() {
 
         if (stats.length === 0) {
             return [
-                { title: 'Poin Saya', value: (user as any).totalPoin || 0, icon: Award, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                { title: 'Poin Saya', value: user.totalPoin || 0, icon: Award, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                 { title: 'Tugas Aktif', value: myActiveTasks, icon: ClipboardList, color: 'text-blue-600', bg: 'bg-blue-50' },
                 { title: 'Rank Media', value: '#12', icon: Trophy, color: 'text-amber-600', bg: 'bg-amber-50' },
                 { title: 'Status Akun', value: 'Aktif', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },

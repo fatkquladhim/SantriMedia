@@ -24,6 +24,8 @@ export interface UserProfile {
     divisiNama: string | null
     kamarId: string | null
     isProfileComplete: boolean
+    bio?: string | null
+    totalPoin: number
 }
 
 interface AuthState {
@@ -77,6 +79,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     divisiNama: profile.divisi?.nama || null,
                     kamarId: profile.kamar_id,
                     isProfileComplete: profile.is_profile_complete,
+                    bio: profile.bio || null,
+                    totalPoin: profile.total_poin || 0,
                 }
                 set({ user: userProfile, isAuthenticated: true, isLoading: false })
             }
