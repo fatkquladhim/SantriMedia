@@ -1,7 +1,7 @@
 // src/app/(auth)/login/page.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { useAuthStore } from '@/stores/authStore'
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { AlertCircle, Github, Loader2 } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginForm() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -26,7 +26,6 @@ export default function LoginPage() {
         const errorParam = searchParams.get('error')
         if (errorParam) {
             setError(decodeURIComponent(errorParam))
-            // Clean the URL
             window.history.replaceState({}, '', '/login')
         }
     }, [searchParams])
@@ -48,10 +47,7 @@ export default function LoginPage() {
             return
         }
 
-        // Refresh global auth store state
         await fetchUser()
-
-        // Middleware will handle redirecting to /dashboard or /complete-profile
         router.refresh()
     }
 
@@ -82,8 +78,6 @@ export default function LoginPage() {
             {/* Left Column - Visual/Illustration */}
             <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-12">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 to-sky-100/50 dark:from-blue-900/50 dark:to-sky-900/50" />
-
-                {/* Decorative floating shapes */}
                 <div className="absolute top-20 left-20 w-32 h-32 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob" />
                 <div className="absolute top-40 right-20 w-32 h-32 bg-sky-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob animation-delay-2000" />
                 <div className="absolute -bottom-8 left-40 w-32 h-32 bg-green-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob animation-delay-4000" />
@@ -101,16 +95,13 @@ export default function LoginPage() {
 
             {/* Right Column - Auth Form */}
             <div className="flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-12 relative z-10">
-                {/* Glassmorphic Panel */}
                 <div className="w-full max-w-[440px] glass-panel dark:bg-black/30 bg-white/70 p-8 sm:p-10 rounded-3xl shadow-xl flex flex-col relative overflow-hidden">
-
-                    {/* Header */}
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-sky-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
                             <span className="text-xl font-bold text-white">E</span>
                         </div>
                         <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
-                            messimo
+                            Santri Media
                         </h1>
                     </div>
 
@@ -152,7 +143,7 @@ export default function LoginPage() {
                                 </label>
                                 <Input
                                     type="password"
-                                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                                    placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -210,12 +201,6 @@ export default function LoginPage() {
                             </button>
                         </div>
 
-                        <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-auto pt-4">
-                            By continuing you agree to Messimo's{' '}
-                            <a href="#" className="underline font-medium hover:text-blue-600">Terms of Services</a> and{' '}
-                            <a href="#" className="underline font-medium hover:text-blue-600">Privacy Policy</a>.
-                        </p>
-
                         <div className="text-center text-sm mt-4">
                             <span className="text-slate-500">Don't have an account? </span>
                             <button
@@ -230,5 +215,13 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F0FDF4] animate-pulse">Loading...</div>}>
+            <LoginForm />
+        </Suspense>
     )
 }
