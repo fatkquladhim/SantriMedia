@@ -104,14 +104,14 @@ export default function AdminRBACPage() {
 
     const roles = [
         { value: 'user', label: 'Santri / Regular User' },
-        { value: 'kepala_kamar', label: 'Kepala Kamar' },
+        { value: 'kepala_asrama', label: 'Kepala Asrama' },
         { value: 'admin', label: 'Administrator System' },
     ]
 
     const getRoleVariant = (role: string) => {
         switch (role?.toLowerCase()) {
             case 'admin': return 'error'
-            case 'kepala_kamar': return 'warning'
+            case 'kepala_asrama': return 'warning'
             case 'sdm': return 'success'
             default: return 'info'
         }

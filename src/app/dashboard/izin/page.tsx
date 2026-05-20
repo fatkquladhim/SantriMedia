@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/authStore'
 import { useApi } from '@/hooks/useApi'
 import { apiFetch } from '@/lib/api'
@@ -14,6 +15,7 @@ import { id } from 'date-fns/locale'
 import { Badge } from '@/components/ui/Badge'
 
 export default function IzinPage() {
+    const router = useRouter()
     const { user } = useAuthStore()
     const isAdmin = user?.baseRole === 'admin'
 
@@ -23,7 +25,7 @@ export default function IzinPage() {
     useEffect(() => {
         if (user) {
             if (isAdmin) {
-                window.location.href = '/dashboard'
+                router.push('/dashboard')
                 return
             }
             fetchData()

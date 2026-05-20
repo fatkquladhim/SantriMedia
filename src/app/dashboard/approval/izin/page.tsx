@@ -20,7 +20,7 @@ export default function ApprovalIzinPage() {
 
     const isAdmin = user?.baseRole === 'admin'
     const isStaf = hasPermission('staf_kantor') || isAdmin
-    const isKamar = user?.baseRole === 'kepala_kamar' || isAdmin
+    const isKamar = user?.baseRole === 'kepala_asrama' || isAdmin
 
     const handleAction = async (id: string, action: 'approve' | 'reject') => {
         let catatan = null;

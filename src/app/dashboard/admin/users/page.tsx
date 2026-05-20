@@ -203,8 +203,8 @@ export default function AdminUsersPage() {
             case 'admin': 
                 badges.push(<Badge key="admin" variant="error" className="bg-rose-100 text-rose-700 border-rose-200 shadow-sm">Admin</Badge>)
                 break
-            case 'kepala_kamar': 
-                badges.push(<Badge key="kamar" variant="info" className="bg-sky-100 text-sky-700 border-sky-200 shadow-sm">Kepala Kamar</Badge>)
+            case 'kepala_asrama': 
+                badges.push(<Badge key="asrama" variant="info" className="bg-sky-100 text-sky-700 border-sky-200 shadow-sm">Kepala Asrama</Badge>)
                 break
             default: 
                 badges.push(<Badge key="user" variant="default" className="bg-blue-100 text-blue-700 border-blue-200 shadow-sm">Santri</Badge>)
@@ -459,7 +459,7 @@ export default function AdminUsersPage() {
                                         onChange={(e) => setTargetRole(e.target.value)}
                                         options={[
                                             { value: 'user', label: 'User / Santri Regular' },
-                                            { value: 'kepala_kamar', label: 'Kepala Kamar (Akses Asrama)' },
+                                            { value: 'kepala_asrama', label: 'Kepala Asrama (Akses Asrama)' },
                                             { value: 'admin', label: 'Admin (Akses Penuh)' },
                                         ]}
                                     />
@@ -580,7 +580,7 @@ export default function AdminUsersPage() {
                             onChange={(e) => setCreateForm({...createForm, base_role: e.target.value})}
                             options={[
                                 { value: 'user', label: 'Santri / Developer' },
-                                { value: 'kepala_kamar', label: 'Kepala Kamar (Asrama)' },
+                                { value: 'kepala_asrama', label: 'Kepala Asrama' },
                                 { value: 'admin', label: 'Administrator Sistem' },
                             ]}
                         />

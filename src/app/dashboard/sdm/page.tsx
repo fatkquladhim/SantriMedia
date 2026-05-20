@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Award, TrendingUp, UserCheck, AlertTriangle } from 'lucide-react'
 
 export default function KepegawaianPage() {
-    const { data: staff, isLoading } = useApi('/users?role=sdm,kepala_kamar', { immediate: true })
+    const { data: staff, isLoading } = useApi('/users?role=sdm,kepala_asrama', { immediate: true })
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">

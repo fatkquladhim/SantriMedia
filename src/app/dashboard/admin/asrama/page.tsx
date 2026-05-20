@@ -31,14 +31,17 @@ export default function AdminMasterAsramaPage() {
     const [isKamarModalOpen, setIsKamarModalOpen] = useState(false)
     const [isKamarLoading, setIsKamarLoading] = useState(false)
     const [selectedAsrama, setSelectedAsrama] = useState<any>(null)
-    const [roomFormData, setRoomFormData] = useState({ nomor: '', kapasitas: 10, kepala_kamar_id: '' })
+    const [roomFormData, setRoomFormData] = useState({ nomor: '', kapasitas: 10 })
     const [editingRoomId, setEditingRoomId] = useState<string | null>(null)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
         try {
-            const payload = { nama: formData.nama }
+            const payload = {
+                nama: formData.nama,
+                kepala_asrama_id: formData.kepala_asrama_id || null
+            }
 
             if (editingAsrama) {
                 await apiFetch(`/asrama/${editingAsrama.id}`, {
@@ -66,7 +69,7 @@ export default function AdminMasterAsramaPage() {
         setEditingAsrama(a)
         setFormData({
             nama: a.nama,
-            kepala_asrama_id: ''
+            kepala_asrama_id: a.kepala_asrama_id || ''
         })
         setIsModalOpen(true)
     }
@@ -101,8 +104,8 @@ export default function AdminMasterAsramaPage() {
         setIsSubmitting(true)
         try {
             const payload = {
-                ...roomFormData,
-                kepala_kamar_id: roomFormData.kepala_kamar_id || null
+                nomor: roomFormData.nomor,
+                kapasitas: roomFormData.kapasitas
             }
 
             if (editingRoomId) {
@@ -116,7 +119,7 @@ export default function AdminMasterAsramaPage() {
                     body: JSON.stringify(payload)
                 })
             }
-            setRoomFormData({ nomor: '', kapasitas: 10, kepala_kamar_id: '' })
+            setRoomFormData({ nomor: '', kapasitas: 10 })
             setEditingRoomId(null)
             
             // Re-fetch detail for selected asrama
@@ -159,6 +162,18 @@ export default function AdminMasterAsramaPage() {
                     </div>
                 </div>
             )
+        },
+        {
+            id: 'kepala_asrama',
+            header: 'Kepala Asrama',
+            cell: ({ row }) => {
+                const kepala = row.original.kepala_asrama
+                return (
+                    <span className="text-sm font-semibold text-slate-700">
+                        {kepala ? kepala.full_name : <span className="text-slate-400 italic">Belum ditugaskan</span>}
+                    </span>
+                )
+            }
         },
         {
             id: 'kapasitas',
@@ -284,6 +299,17 @@ export default function AdminMasterAsramaPage() {
                         onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
                         required
                     />
+                    <Select
+                        label="Kepala Asrama"
+                        options={[
+                            { value: '', label: 'Belum ditugaskan' },
+                            ...users
+                                .filter((u: any) => u.base_role === 'kepala_asrama')
+                                .map((u: any) => ({ value: u.id, label: u.full_name }))
+                        ]}
+                        value={formData.kepala_asrama_id}
+                        onChange={(e) => setFormData({ ...formData, kepala_asrama_id: e.target.value })}
+                    />
                     <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
                         <Button type="button" variant="outline" className="rounded-xl" onClick={() => setIsModalOpen(false)}>Batal</Button>
                         <Button type="submit" className="bg-blue-600 hover:bg-blue-700 rounded-xl px-10 h-11 text-white shadow-lg shadow-blue-900/10" isLoading={isSubmitting}>
@@ -329,17 +355,9 @@ export default function AdminMasterAsramaPage() {
                                     required
                                 />
                             </div>
-                            <Select
-                                label="Pilih Kepala Kamar"
-                                options={users
-                                    .filter((u: any) => u.base_role === 'kepala_kamar')
-                                    .map((u: any) => ({ value: u.id, label: u.full_name }))}
-                                value={roomFormData.kepala_kamar_id}
-                                onChange={(e) => setRoomFormData({ ...roomFormData, kepala_kamar_id: e.target.value })}
-                            />
                             <div className="flex justify-end gap-2 pt-2">
                                 {editingRoomId && (
-                                    <Button type="button" variant="outline" size="sm" className="rounded-xl px-6" onClick={() => { setEditingRoomId(null); setRoomFormData({ nomor: '', kapasitas: 10, kepala_kamar_id: '' }); }}>
+                                    <Button type="button" variant="outline" size="sm" className="rounded-xl px-6" onClick={() => { setEditingRoomId(null); setRoomFormData({ nomor: '', kapasitas: 10 }); }}>
                                         Batal
                                     </Button>
                                 )}
@@ -354,7 +372,6 @@ export default function AdminMasterAsramaPage() {
                                 <TableHeader className="bg-slate-50 sticky top-0 backdrop-blur-md">
                                     <TableRow>
                                         <TableHead className="font-black text-slate-600 text-[10px] uppercase tracking-wider">No. Kamar</TableHead>
-                                        <TableHead className="font-black text-slate-600 text-[10px] uppercase tracking-wider">Kepala Kamar</TableHead>
                                         <TableHead className="font-black text-slate-600 text-[10px] uppercase tracking-wider">Kapasitas</TableHead>
                                         <TableHead className="text-right font-black text-slate-600 text-[10px] uppercase tracking-wider">Aksi</TableHead>
                                     </TableRow>
@@ -365,20 +382,13 @@ export default function AdminMasterAsramaPage() {
                                             <TableRow key={k.id} className="hover:bg-blue-50/50 transition-colors border-slate-100">
                                                 <TableCell className="font-bold text-slate-800">{k.nomor}</TableCell>
                                                 <TableCell>
-                                                    {k.kepala_kamar ? (
-                                                        <span className="text-sm font-semibold text-slate-700">{k.kepala_kamar.full_name}</span>
-                                                    ) : (
-                                                        <span className="text-xs text-slate-400 italic">Belum ditugaskan</span>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>
                                                     <span className="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-slate-700 text-[10px] font-black uppercase">
                                                         {k.kapasitas} Santri
                                                     </span>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex items-center justify-end gap-1">
-                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-100 text-blue-600 rounded-lg" onClick={() => { setEditingRoomId(k.id); setRoomFormData({ nomor: k.nomor, kapasitas: k.kapasitas, kepala_kamar_id: k.kepala_kamar_id || '' }); }}>
+                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-100 text-blue-600 rounded-lg" onClick={() => { setEditingRoomId(k.id); setRoomFormData({ nomor: k.nomor, kapasitas: k.kapasitas }); }}>
                                                             <Edit2 size={14} />
                                                         </Button>
                                                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-rose-400 hover:bg-rose-50 hover:text-rose-600 rounded-lg" onClick={() => deleteRoom(k.id)}>
@@ -390,7 +400,7 @@ export default function AdminMasterAsramaPage() {
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-12 text-slate-400 italic text-sm">Belum ada kamar terdaftar di gedung ini.</TableCell>
+                                            <TableCell colSpan={3} className="text-center py-12 text-slate-400 italic text-sm">Belum ada kamar terdaftar di gedung ini.</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>

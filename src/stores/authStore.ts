@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { createClient } from '@/lib/supabase/client'
 
 // ===== Types =====
-export type BaseRole = 'admin' | 'kepala_kamar' | 'user'
+export type BaseRole = 'admin' | 'kepala_asrama' | 'user'
 
 export type DynamicPermission =
     | 'ketua_divisi'     // DP-1
