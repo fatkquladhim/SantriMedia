@@ -49,17 +49,13 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url)
     }
 
+    // Read profile completeness from JWT claims (injected by custom_access_token_hook)
+    // Falls back to DB query if claim is missing (e.g., old tokens)
+    const isProfileComplete = (user as any)?.user_metadata?.is_profile_complete ?? false;
+
     // RULE 3: Profile Completeness Gate
     if (user && !isPublicRoute && pathname !== '/complete-profile' && !pathname.startsWith('/auth')) {
-        // Check profile completeness from database
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('is_profile_complete')
-            .eq('id', user.id)
-            .single()
-
-        // Redirect if profile doesn't exist yet OR exists but marked incomplete
-        if (!profile || !profile.is_profile_complete) {
+        if (!isProfileComplete) {
             const url = request.nextUrl.clone()
             url.pathname = '/complete-profile'
             return NextResponse.redirect(url)
@@ -68,13 +64,7 @@ export async function updateSession(request: NextRequest) {
 
     // RULE 4: Profile is complete but accessing /complete-profile -> redirect to /dashboard
     if (user && pathname === '/complete-profile') {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('is_profile_complete')
-            .eq('id', user.id)
-            .single()
-
-        if (profile?.is_profile_complete) {
+        if (isProfileComplete) {
             const url = request.nextUrl.clone()
             url.pathname = '/dashboard'
             return NextResponse.redirect(url)
