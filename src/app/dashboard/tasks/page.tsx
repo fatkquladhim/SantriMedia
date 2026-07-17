@@ -136,7 +136,7 @@ function HistoriView() {
                                 <TableRow key={t.id}>
                                     <TableCell>
                                         <p className="font-semibold text-slate-800 max-w-[180px] truncate">{t.judul}</p>
-                                        <p className="text-[10px] text-slate-400 mt-0.5">{t.divisi?.nama || t.platform?.nama || 'General'}</p>
+                                        <p className="text-[10px] text-slate-400 mt-0.5">{t.divisi?.nama || 'General'}</p>
                                     </TableCell>
                                     <TableCell>
                                         {t.assigned_user ? (
@@ -265,7 +265,7 @@ function KanbanView() {
                 <div className={`absolute top-0 left-0 w-1 h-full ${task.status === 'todo' ? 'bg-slate-300' : task.status === 'in_progress' ? 'bg-blue-400' : task.status === 'review' ? 'bg-amber-400' : 'bg-blue-400'}`} />
                 <div className="flex justify-between items-start mb-3">
                     <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-600 border-slate-200">
-                        {task.divisi?.nama || task.platform?.nama || 'General'}
+                        {task.divisi?.nama || 'General'}
                     </Badge>
                     <span className={`px-1.5 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-widest ${getPriorityColor(task.priority)}`}>
                         {task.priority}
@@ -394,7 +394,7 @@ function KanbanView() {
                         <div>
                             <h3 className="text-xl font-black text-slate-900">{selectedTask.judul}</h3>
                             <div className="flex gap-2 mt-2">
-                                <Badge variant="outline">{selectedTask.divisi?.nama || selectedTask.platform?.nama || 'General'}</Badge>
+                                <Badge variant="outline">{selectedTask.divisi?.nama || 'General'}</Badge>
                                 <Badge className={`text-[10px] ${STATUS_STYLE[selectedTask.status]}`}>{selectedTask.status.replace('_', ' ')}</Badge>
                             </div>
                         </div>
@@ -428,7 +428,7 @@ function KanbanView() {
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function TasksPage() {
     const { user, hasAnyPermission } = useAuthStore()
-    const isKetua = hasAnyPermission('ketua_divisi', 'ketua_platform') || user?.baseRole === 'admin'
+    const isKetua = hasAnyPermission('ketua_divisi') || user?.baseRole === 'admin'
 
     if (!user) return null
     return isKetua ? <HistoriView /> : <KanbanView />

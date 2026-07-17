@@ -18,8 +18,9 @@ export function useApi<T = any>(
     initialEndpoint: string,
     options: { immediate?: boolean; initialData?: T } = {}
 ): UseApiResponse<T> {
-    const [data, setData] = useState<T | null>(options.initialData ?? null)
-    const [isLoading, setIsLoading] = useState<boolean>(options.immediate ?? true)
+    const { immediate = true, initialData = null } = options
+    const [data, setData] = useState<T | null>(initialData)
+    const [isLoading, setIsLoading] = useState<boolean>(immediate)
     const [error, setError] = useState<string | null>(null)
 
     const fetchData = useCallback(
@@ -28,9 +29,8 @@ export function useApi<T = any>(
             setError(null)
             try {
                 const response = await apiFetch(overrideEndpoint || initialEndpoint)
-                // Express backend wrapper returns data inside `data`
-                // Only strip `data` if it's not a paginated response (to keep pagination metadata)
-                const responseData = (response.data !== undefined && !response.pagination) ? response.data : response
+                // All pages expect the full response object (they access `response.data` inside).
+                const responseData = response;
                 setData(responseData)
                 return responseData
             } catch (err: any) {
@@ -44,10 +44,10 @@ export function useApi<T = any>(
     )
 
     useEffect(() => {
-        if (options.immediate) {
+        if (immediate) {
             fetchData()
         }
-    }, [fetchData, options.immediate])
+    }, [fetchData, immediate])
 
     return {
         data,

@@ -7,7 +7,6 @@ export type BaseRole = 'admin' | 'kepala_asrama' | 'user'
 
 export type DynamicPermission =
     | 'ketua_divisi'     // DP-1
-    | 'ketua_platform'   // DP-2
     | 'staf_kantor'      // DP-3
     | 'staf_alat'        // DP-4
     | 'sdm'              // DP-5
@@ -16,13 +15,15 @@ export interface UserProfile {
     id: string
     fullName: string
     email: string
-    nomorInduk?: string | null // Deprecated - Removing NIS
+    nomorInduk?: string | null
+    alamat?: string | null
+    nomorDarurat?: string | null
     avatarUrl: string | null
     baseRole: BaseRole
     dynamicPermissions: DynamicPermission[]
     divisiId: string | null
     divisiNama: string | null
-    kamarId: string | null
+    asramaId: string | null
     isProfileComplete: boolean
     bio?: string | null
     totalPoin: number
@@ -69,15 +70,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 const userProfile: UserProfile = {
                     id: profile.id,
                     fullName: profile.full_name,
-                    email: profile.email,
-                    avatarUrl: profile.avatar_url,
+                email: profile.email,
+                nomorInduk: profile.nomor_induk || null,
+                alamat: profile.alamat || null,
+                nomorDarurat: profile.nomor_darurat || null,
+                avatarUrl: profile.avatar_url,
                     baseRole: profile.base_role as BaseRole,
                     dynamicPermissions: (profile.dynamic_permissions || []).map(
                         (p: string) => p as DynamicPermission
                     ),
                     divisiId: profile.divisi_id,
                     divisiNama: profile.divisi?.nama || null,
-                    kamarId: profile.kamar_id,
+                    asramaId: profile.asrama_id,
                     isProfileComplete: profile.is_profile_complete,
                     bio: profile.bio || null,
                     totalPoin: profile.total_poin || 0,

@@ -36,10 +36,7 @@ export default function AdminRBACPage() {
 
     // For Scoped Selection
     const { data: divisions } = useApi('/divisi', { immediate: true })
-    const { data: platforms } = useApi('/platform', { immediate: true })
-
     const divisionList = Array.isArray(divisions) ? divisions : (divisions?.data || [])
-    const platformList = Array.isArray(platforms) ? platforms : (platforms?.data || [])
 
     // Filter users for sidebar
     const filteredUsers = useMemo(() => {
@@ -121,7 +118,6 @@ export default function AdminRBACPage() {
         { id: 'staf_kantor', label: 'Staf Kantor', desc: 'Akses ke administrasi kantor' },
         { id: 'staf_alat', label: 'Staf Alat', desc: 'Kelola inventaris asrama' },
         { id: 'ketua_divisi', label: 'Ketua Divisi', desc: 'Akses delegasi tugas divisi' },
-        { id: 'ketua_platform', label: 'Ketua Platform', desc: 'Akses delegasi tugas platform' },
         { id: 'sdm', label: 'SDM / HRD', desc: 'Hak kases manajemen SDM/Staf' }
     ]
 
@@ -346,7 +342,7 @@ export default function AdminRBACPage() {
                                 <CardContent>
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         {dynamicPermissions.map((perm) => {
-                                            const isScoped = perm.id === 'ketua_divisi' || perm.id === 'ketua_platform'
+                                            const isScoped = perm.id === 'ketua_divisi'
                                             const scopes = userData.dynamic_permissions?.filter((p: any) => p.permission === perm.id) || []
                                             const hasMainPerm = scopes.length > 0
 
@@ -410,7 +406,7 @@ export default function AdminRBACPage() {
                                                         <div className="p-3 bg-slate-900 rounded-xl animate-in zoom-in-95 duration-200 ml-5 relative z-20 shadow-xl border border-slate-700">
                                                             <div className="text-[10px] font-black text-slate-400 mb-2 px-1">PILIH TARGET ({perm.label.toUpperCase()})</div>
                                                             <div className="grid grid-cols-1 gap-1 max-h-40 overflow-y-auto custom-scrollbar">
-                                                                {(perm.id === 'ketua_divisi' ? divisionList : platformList).map((target: any) => {
+                                                                {divisionList.map((target: any) => {
                                                                     const alreadyAssigned = scopes.some((s: any) => s.target_id === target.id)
                                                                     return (
                                                                         <button

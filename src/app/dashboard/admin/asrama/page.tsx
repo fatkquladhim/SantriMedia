@@ -18,6 +18,7 @@ export default function AdminMasterAsramaPage() {
     const { data: usersData } = useApi('/users', { immediate: true })
 
     const users = Array.isArray(usersData) ? usersData : (usersData?.data || [])
+    const asramaList = Array.isArray(asrama) ? asrama : (asrama?.data || [])
 
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -249,7 +250,7 @@ export default function AdminMasterAsramaPage() {
                     ) : (
                         <DataTable
                             columns={columns}
-                            data={asrama || []}
+                            data={asramaList || []}
                             searchKey="nama"
                             searchPlaceholder="Cari nama gedung..."
                         />
@@ -268,7 +269,7 @@ export default function AdminMasterAsramaPage() {
                                     <Building2 size={80} />
                                 </div>
                                 <p className="text-xs font-bold text-blue-100 uppercase tracking-widest relative z-10">Total Gedung</p>
-                                <p className="text-4xl font-black text-white mt-1 relative z-10">{asrama?.length || 0}</p>
+                                <p className="text-4xl font-black text-white mt-1 relative z-10">{asramaList?.length || 0}</p>
                             </div>
                             <div className="p-5 rounded-2xl border border-blue-100 bg-blue-50/50 backdrop-blur-sm relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-4 translate-x-2 -translate-y-2 opacity-10 group-hover:scale-110 transition-transform text-blue-600">
@@ -276,7 +277,7 @@ export default function AdminMasterAsramaPage() {
                                 </div>
                                 <p className="text-xs font-bold text-blue-600 uppercase tracking-widest relative z-10">Total Kamar</p>
                                 <p className="text-3xl font-black text-blue-900 mt-1 relative z-10">
-                                    {asrama?.reduce((acc: number, curr: any) => acc + (curr.kamar?.length || 0), 0) || 0}
+                                    {asramaList?.reduce((acc: number, curr: any) => acc + (curr.kamar?.length || 0), 0) || 0}
                                 </p>
                             </div>
                         </div>

@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, User, ClipboardList, Building2, Monitor, ArrowRight, Package } from 'lucide-react'
+import { Search, User, ClipboardList, Building2, ArrowRight, Package } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { createPortal } from 'react-dom'
@@ -12,7 +12,6 @@ interface SearchResults {
     users: any[]
     tasks: any[]
     divisions: any[]
-    platforms: any[]
     equipment: any[]
 }
 
@@ -77,7 +76,6 @@ export function CommandPalette({ isOpen, onClose }: { isOpen: boolean; onClose: 
         ...(results?.tasks.map(t => ({ ...t, type: 'task', label: t.judul, icon: ClipboardList, href: `/dashboard/tasks` })) || []),
         ...(results?.users.map(u => ({ ...u, type: 'user', label: u.full_name, icon: User, href: `/dashboard/admin/users` })) || []),
         ...(results?.divisions.map(d => ({ ...d, type: 'divisi', label: d.nama, icon: Building2, href: `/dashboard/admin/divisi` })) || []),
-        ...(results?.platforms.map(p => ({ ...p, type: 'platform', label: p.nama, icon: Monitor, href: `/dashboard/admin/platform` })) || []),
         ...(results?.equipment.map(e => ({ 
             ...e, 
             type: 'alat_media', 

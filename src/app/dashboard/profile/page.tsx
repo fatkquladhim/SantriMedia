@@ -24,7 +24,10 @@ export default function ProfilePage() {
     // Fetch data for portfolio & options
     const { data: portfolioData, isLoading: isPortfolioLoading } = useApi(`/tasks?assigned_to=${user?.id}&status=done`, { immediate: !!user })
     const { data: divisionsData } = useApi('/divisi')
-    const { data: roomsData } = useApi('/asrama/all-rooms')
+    const { data: asramaData } = useApi('/asrama')
+
+    const divisiList = Array.isArray(divisionsData) ? divisionsData : (divisionsData?.data || [])
+    const asramaList = Array.isArray(asramaData) ? asramaData : (asramaData?.data || [])
 
     // Edit State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -34,7 +37,9 @@ export default function ProfilePage() {
         fullName: user?.fullName || '',
         bio: (user as any).bio || '',
         divisiId: user?.divisiId || '',
-        kamarId: user?.kamarId || '',
+        asramaId: user?.asramaId || '',
+        alamat: (user as any).alamat || '',
+        nomorDarurat: (user as any).nomorDarurat || '',
         avatarUrl: user?.avatarUrl || ''
     })
 
@@ -51,7 +56,7 @@ export default function ProfilePage() {
 
         setIsUploading(true)
         const uploadFormData = new FormData()
-        uploadFormData.append('avatar', file)
+        uploadFormData.append('file', file)
 
         try {
             const res = await apiFetch('/upload/avatar', {
@@ -78,6 +83,10 @@ export default function ProfilePage() {
                 method: 'PATCH',
                 body: JSON.stringify(formData)
             })
+            // Refresh session so JWT claim is_profile_complete updates
+            const { createClient } = await import('@/lib/supabase/client')
+            const supabase = createClient()
+            await supabase.auth.refreshSession()
             await fetchUser() // Refresh local store
             setIsEditModalOpen(false)
         } catch (err) {
@@ -309,17 +318,22 @@ export default function ProfilePage() {
                             label="Divisi Multimedia" 
                             value={formData.divisiId} 
                             onChange={(e) => setFormData(p => ({ ...p, divisiId: e.target.value }))}
-                            options={[{ value: '', label: '-- Pilih Divisi --' }, ...(divisionsData?.data || []).map((d: any) => ({ value: d.id, label: d.nama }))]}
+                            options={[{ value: '', label: '-- Pilih Divisi --' }, ...divisiList.map((d: any) => ({ value: d.id, label: d.nama }))]}
                             required
                         />
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
+                        <Input label="Alamat" value={formData.alamat} onChange={(e) => setFormData(p => ({ ...p, alamat: e.target.value }))} />
+                        <Input label="Nomor Darurat" value={formData.nomorDarurat} onChange={(e) => setFormData(p => ({ ...p, nomorDarurat: e.target.value }))} />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
                         <Select 
-                            label="Asrama / Kamar" 
-                            value={formData.kamarId} 
-                            onChange={(e) => setFormData(p => ({ ...p, kamarId: e.target.value }))}
-                            options={[{ value: '', label: '-- Pilih Kamar --' }, ...(roomsData?.data || []).map((r: any) => ({ value: r.id, label: r.label }))]}
+                            label="Asrama" 
+                            value={formData.asramaId} 
+                            onChange={(e) => setFormData(p => ({ ...p, asramaId: e.target.value }))}
+                            options={[{ value: '', label: '-- Pilih Asrama --' }, ...asramaList.map((a: any) => ({ value: a.id, label: a.nama }))]}
                             required
                         />
                          <div className="space-y-1">

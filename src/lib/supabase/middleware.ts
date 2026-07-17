@@ -54,21 +54,19 @@ export async function updateSession(request: NextRequest) {
     const isProfileComplete = (user as any)?.user_metadata?.is_profile_complete ?? false;
 
     // RULE 3: Profile Completeness Gate
-    if (user && !isPublicRoute && pathname !== '/complete-profile' && !pathname.startsWith('/auth')) {
+    if (user && !isPublicRoute && pathname !== '/dashboard/profile' && !pathname.startsWith('/auth')) {
         if (!isProfileComplete) {
             const url = request.nextUrl.clone()
-            url.pathname = '/complete-profile'
+            url.pathname = '/dashboard/profile'
             return NextResponse.redirect(url)
         }
     }
 
-    // RULE 4: Profile is complete but accessing /complete-profile -> redirect to /dashboard
+    // RULE 4: Profile is complete but accessing /complete-profile (legacy) -> redirect to /dashboard
     if (user && pathname === '/complete-profile') {
-        if (isProfileComplete) {
-            const url = request.nextUrl.clone()
-            url.pathname = '/dashboard'
-            return NextResponse.redirect(url)
-        }
+        const url = request.nextUrl.clone()
+        url.pathname = isProfileComplete ? '/dashboard' : '/dashboard/profile'
+        return NextResponse.redirect(url)
     }
 
     return supabaseResponse

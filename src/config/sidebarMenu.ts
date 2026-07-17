@@ -176,13 +176,6 @@ export const sidebarMenuConfig: SidebarMenuGroup[] = [
                 adminOnly: true,
             },
             {
-                id: 'master-platform',
-                label: 'Manajemen Platform',
-                icon: Monitor,
-                href: '/dashboard/admin/platform',
-                adminOnly: true,
-            },
-            {
                 id: 'master-asrama',
                 label: 'Hunian Asrama',
                 icon: Building2,

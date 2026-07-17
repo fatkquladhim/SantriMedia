@@ -34,7 +34,7 @@ export default function DashboardOverview() {
     const { user, hasAnyPermission } = useAuthStore()
     const isAdmin = user?.baseRole === 'admin'
     const isKepalaAsrama = user?.baseRole === 'kepala_asrama'
-    const isKetua = hasAnyPermission('ketua_divisi', 'ketua_platform')
+    const isKetua = hasAnyPermission('ketua_divisi')
     const isSDM = hasAnyPermission('sdm')
     const isStafAlat = hasAnyPermission('staf_alat')
     const isStafKantor = hasAnyPermission('staf_kantor')

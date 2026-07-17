@@ -49,7 +49,6 @@ export default function AdminUsersPage() {
     // Options for Dynamic Permissions
     const PERMISSION_OPTIONS = [
         { value: 'ketua_divisi', label: 'Ketua Divisi (Pilih Divisi)' },
-        { value: 'ketua_platform', label: 'Ketua Platform (Pilih Platform)' },
         { value: 'staf_kantor', label: 'Staf Kantor' },
         { value: 'staf_alat', label: 'Staf Alat' },
         { value: 'sdm', label: 'SDM' },
@@ -165,6 +164,16 @@ export default function AdminUsersPage() {
             alert('Gagal menambah email. Mungkin sudah ada di daftar.')
         } finally {
             setIsAddingWhitelist(false)
+        }
+    }
+
+    const handleDeleteUser = async (userId: string, fullName: string) => {
+        if (!confirm(`Hapus user "${fullName}" secara permanen? Semua data terkait akan ikut terhapus.`)) return
+        try {
+            await apiFetch(`/users/${userId}`, { method: 'DELETE' })
+            fetchData('/users')
+        } catch (err) {
+            alert('Gagal menghapus user')
         }
     }
 
@@ -316,13 +325,22 @@ export default function AdminUsersPage() {
                                                     {format(new Date(u.created_at), 'dd MMM yyyy', { locale: id })}
                                                 </TableCell>
                                                 <TableCell className="text-right px-8">
-                                                    <Button
-                                                        variant="outline"
-                                                        onClick={() => handleViewDetail(u.id)}
-                                                        className="h-11 px-5 rounded-xl border-slate-200 hover:border-blue-500 hover:text-blue-600 font-black text-xs tracking-wider transition-all"
-                                                    >
-                                                        KONTROL AKSES
-                                                    </Button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() => handleViewDetail(u.id)}
+                                                            className="h-11 px-5 rounded-xl border-slate-200 hover:border-blue-500 hover:text-blue-600 font-black text-xs tracking-wider transition-all"
+                                                        >
+                                                            KONTROL AKSES
+                                                        </Button>
+                                                        <button
+                                                            onClick={() => handleDeleteUser(u.id, u.full_name)}
+                                                            className="h-11 w-11 rounded-xl border border-slate-200 text-slate-300 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all flex items-center justify-center"
+                                                            title="Hapus user"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -487,9 +505,9 @@ export default function AdminUsersPage() {
                                         options={PERMISSION_OPTIONS}
                                     />
                                     
-                                    {(newPermission === 'ketua_divisi' || newPermission === 'ketua_platform') && (
+                                    {(newPermission === 'ketua_divisi') && (
                                         <Input 
-                                            placeholder="Masukkan ID Divisi/Platform"
+                                            placeholder="Masukkan ID Divisi"
                                             value={permissionTarget}
                                             onChange={(e) => setPermissionTarget(e.target.value)}
                                             className="h-11 rounded-xl"
