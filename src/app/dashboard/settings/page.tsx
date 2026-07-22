@@ -53,21 +53,21 @@ export default function SettingsPage() {
             if (res.success) {
                 const newUrl = `${res.data.url}?t=${Date.now()}`
                 setAvatarUrl(newUrl)
-                
-                // OTOMATIS SIMPAN KE DATABASE PROFIL
+
+                // Simpan hanya avatarUrl — jangan ikut sertakan fullName/bio
+                // dari state lama karena user mungkin belum klik Save Changes
                 const saveRes = await apiFetch('/users/me', {
                     method: 'PATCH',
-                    body: JSON.stringify({ fullName, bio, avatarUrl: newUrl })
+                    body: JSON.stringify({ avatarUrl: newUrl })
                 })
 
                 if (saveRes.success) {
-                    setUser({ ...user, fullName, bio, avatarUrl: newUrl })
-                    alert('Foto profil berhasil diperbarui secara otomatis! âœ¨')
+                    setUser({ ...user, avatarUrl: newUrl })
+                    alert('Foto profil berhasil diperbarui!')
                 }
             }
-        } catch (err) {
-            console.error(err)
-            alert('Gagal mengunggah foto.')
+        } catch (err: any) {
+            alert(err?.message || 'Gagal mengunggah foto.')
         } finally {
             setIsUploading(false)
         }
@@ -78,16 +78,15 @@ export default function SettingsPage() {
         try {
             const res = await apiFetch('/users/me', {
                 method: 'PATCH',
-                body: JSON.stringify({ fullName, bio, avatarUrl })
+                body: JSON.stringify({ full_name: fullName, bio, avatar_url: avatarUrl })
             })
-            
+
             if (res.success) {
                 setUser({ ...user, fullName, bio, avatarUrl })
-                alert('Profil berhasil diperbarui! âœ¨')
+                alert('Profil berhasil diperbarui!')
             }
-        } catch (err) {
-            console.error(err)
-            alert('Gagal memperbarui profil.')
+        } catch (err: any) {
+            alert(err?.message || 'Gagal memperbarui profil.')
         } finally {
             setIsSaving(false)
         }

@@ -44,25 +44,30 @@ export default function DashboardOverview() {
     const { data: profilesData, fetchData: fetchProfiles } = useApi('/users', { immediate: false })
     const { data: invData, fetchData: fetchInv } = useApi('/inventaris?is_available=false', { immediate: false })
     const { data: izinData, fetchData: fetchIzin } = useApi('/izin?status=approved', { immediate: false })
-    const { data: myTasks } = useApi(`/tasks?assigned_to=${user?.id}&status=todo,in_progress,review`, { immediate: !!user })
+    // Guard: only fetch when user.id is a real UUID, never when it's undefined
+    const { data: myTasks } = useApi(
+        user?.id ? `/tasks?assigned_to=${user.id}&status=todo,in_progress,review` : '',
+        { immediate: !!user?.id }
+    )
 
     // Delegasi data (only fetched for ketua)
     const { data: teamData, isLoading: isTeamLoading } = useApi('/users?divisi_only=true', { immediate: !!isKetua })
     const { data: allTasksData, isLoading: isAllTasksLoading, fetchData: refreshTasks } = useApi('/tasks', { immediate: !!isKetua })
 
-    const [isLoading, setIsLoading] = useState(true)
+    const [isLoading, setIsLoading] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
     const [form, setForm] = useState({ judul: '', deskripsi: '', priority: 'medium', poin: 10, assigned_to: '', deadline: '' })
 
     useEffect(() => {
-        if (user) {
-            const loaders = [fetchTasks(), fetchProfiles(), fetchInv()]
-            if (isKepalaAsrama || isStafKantor || isAdmin) loaders.push(fetchIzin())
-            Promise.all(loaders).finally(() => setIsLoading(false))
-        }
-    }, [user])
+        if (!user) return
+        setIsLoading(true)
+        const loaders = [fetchTasks(), fetchProfiles(), fetchInv()]
+        if (isKepalaAsrama || isStafKantor || isAdmin) loaders.push(fetchIzin())
+        Promise.all(loaders).finally(() => setIsLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.id])
 
     const members = teamData?.data || []
     const allTasks = allTasksData?.data || []

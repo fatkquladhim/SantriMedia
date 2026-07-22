@@ -27,6 +27,7 @@ export default function AdminMasterAsramaPage() {
         nama: '',
         kepala_asrama_id: ''
     })
+    const [mutationError, setMutationError] = useState<string | null>(null)
 
     // Rooms Management States
     const [isKamarModalOpen, setIsKamarModalOpen] = useState(false)
@@ -38,29 +39,23 @@ export default function AdminMasterAsramaPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
+        setMutationError(null)
         try {
             const payload = {
                 nama: formData.nama,
                 kepala_asrama_id: formData.kepala_asrama_id || null
             }
-
             if (editingAsrama) {
-                await apiFetch(`/asrama/${editingAsrama.id}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(payload)
-                })
+                await apiFetch(`/asrama/${editingAsrama.id}`, { method: 'PUT', body: JSON.stringify(payload) })
             } else {
-                await apiFetch('/asrama', {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                })
+                await apiFetch('/asrama', { method: 'POST', body: JSON.stringify(payload) })
             }
             setIsModalOpen(false)
             setFormData({ nama: '', kepala_asrama_id: '' })
             setEditingAsrama(null)
             fetchData()
-        } catch (err) {
-            console.error(err)
+        } catch (err: any) {
+            setMutationError(err?.message || 'Gagal menyimpan asrama.')
         } finally {
             setIsSubmitting(false)
         }
@@ -68,20 +63,19 @@ export default function AdminMasterAsramaPage() {
 
     const handleEdit = (a: any) => {
         setEditingAsrama(a)
-        setFormData({
-            nama: a.nama,
-            kepala_asrama_id: a.kepala_asrama_id || ''
-        })
+        setMutationError(null)
+        setFormData({ nama: a.nama, kepala_asrama_id: a.kepala_asrama_id || '' })
         setIsModalOpen(true)
     }
 
     const handleDelete = async (id: string) => {
         if (!confirm('Apakah Anda yakin ingin menghapus asrama ini?')) return
+        setMutationError(null)
         try {
             await apiFetch(`/asrama/${id}`, { method: 'DELETE' })
             fetchData()
-        } catch (err) {
-            console.error(err)
+        } catch (err: any) {
+            setMutationError(err?.message || 'Gagal menghapus asrama.')
         }
     }
 
@@ -90,11 +84,12 @@ export default function AdminMasterAsramaPage() {
         setSelectedAsrama(a)
         setIsKamarModalOpen(true)
         setIsKamarLoading(true)
+        setMutationError(null)
         try {
             const res = await apiFetch(`/asrama/${a.id}`)
             setSelectedAsrama(res.data || res)
-        } catch (err) {
-            console.error('Failed to fetch asrama details:', err)
+        } catch (err: any) {
+            setMutationError(err?.message || 'Gagal memuat detail asrama.')
         } finally {
             setIsKamarLoading(false)
         }
@@ -103,32 +98,21 @@ export default function AdminMasterAsramaPage() {
     const handleRoomSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
+        setMutationError(null)
         try {
-            const payload = {
-                nomor: roomFormData.nomor,
-                kapasitas: roomFormData.kapasitas
-            }
-
+            const payload = { nomor: roomFormData.nomor, kapasitas: roomFormData.kapasitas }
             if (editingRoomId) {
-                await apiFetch(`/asrama/kamar/${editingRoomId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(payload)
-                })
+                await apiFetch(`/asrama/kamar/${editingRoomId}`, { method: 'PUT', body: JSON.stringify(payload) })
             } else {
-                await apiFetch(`/asrama/${selectedAsrama.id}/kamar`, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                })
+                await apiFetch(`/asrama/${selectedAsrama.id}/kamar`, { method: 'POST', body: JSON.stringify(payload) })
             }
             setRoomFormData({ nomor: '', kapasitas: 10 })
             setEditingRoomId(null)
-            
-            // Re-fetch detail for selected asrama
             const res = await apiFetch(`/asrama/${selectedAsrama.id}`)
             setSelectedAsrama(res.data || res)
             fetchData()
-        } catch (err) {
-            console.error(err)
+        } catch (err: any) {
+            setMutationError(err?.message || 'Gagal menyimpan kamar.')
         } finally {
             setIsSubmitting(false)
         }
@@ -233,10 +217,10 @@ export default function AdminMasterAsramaPage() {
                 </Button>
             </div>
 
-            {error && (
+            {(error || mutationError) && (
                 <div className="p-4 rounded-xl bg-rose-50/80 backdrop-blur-sm border border-rose-200 text-rose-700 flex items-center gap-3 shadow-sm">
                     <AlertCircle size={20} />
-                    <p className="text-sm font-medium">{error}</p>
+                    <p className="text-sm font-medium">{mutationError || error}</p>
                 </div>
             )}
 

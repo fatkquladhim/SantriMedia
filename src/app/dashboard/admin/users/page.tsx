@@ -65,8 +65,8 @@ export default function AdminUsersPage() {
         try {
             const res = await apiFetch('/rbac/whitelist')
             setWhitelist(res.data || [])
-        } catch (err) {
-            console.error('Failed to fetch whitelist:', err)
+        } catch (err: any) {
+            alert(err?.message || 'Gagal memuat whitelist.')
         } finally {
             setIsWhitelistLoading(false)
         }
@@ -74,7 +74,7 @@ export default function AdminUsersPage() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
-        fetchData(`/users?search=${search}`)
+        fetchData(`/users?search=${encodeURIComponent(search)}`)
     }
 
     const handleViewDetail = async (userId: string) => {
@@ -87,8 +87,9 @@ export default function AdminUsersPage() {
             setTargetRole(user.base_role)
             setNewPermission('')
             setPermissionTarget('')
-        } catch (err) {
-            console.error('Failed to fetch user detail:', err)
+        } catch (err: any) {
+            alert(err?.message || 'Gagal memuat detail user.')
+            setIsDetailModalOpen(false)
         } finally {
             setIsDetailLoading(false)
         }
@@ -104,8 +105,8 @@ export default function AdminUsersPage() {
             })
             handleViewDetail(selectedUser.id)
             fetchData('/users')
-        } catch (err) {
-            alert('Gagal update role')
+        } catch (err: any) {
+            alert(err?.message || 'Gagal update role.')
         } finally {
             setIsUpdating(false)
         }
@@ -117,14 +118,14 @@ export default function AdminUsersPage() {
         try {
             await apiFetch(`/rbac/${selectedUser.id}/permissions`, {
                 method: 'POST',
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     permission: newPermission,
                     target_id: permissionTarget || null
                 })
             })
             handleViewDetail(selectedUser.id)
-        } catch (err) {
-            alert('Gagal tambah izin')
+        } catch (err: any) {
+            alert(err?.message || 'Gagal menambah izin.')
         } finally {
             setIsUpdating(false)
         }

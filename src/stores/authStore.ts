@@ -1,5 +1,6 @@
 // src/stores/authStore.ts
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { createClient } from '@/lib/supabase/client'
 
 // ===== Types =====
@@ -17,7 +18,7 @@ export interface UserProfile {
     email: string
     nomorInduk?: string | null
     alamat?: string | null
-    nomorDarurat?: string | null
+    noHp?: string | null
     avatarUrl: string | null
     baseRole: BaseRole
     dynamicPermissions: DynamicPermission[]
@@ -43,12 +44,17 @@ interface AuthState {
     hasAnyPermission: (...permissions: DynamicPermission[]) => boolean
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-    user: null,
-    isLoading: true,
-    isAuthenticated: false,
+export const useAuthStore = create<AuthState>()(
+    persist(
+        (set, get) => ({
+            user: null,
+            // Start as false — if user is in sessionStorage, persist middleware
+            // hydrates user/isAuthenticated synchronously before first render,
+            // so we never need a loading spinner on page refresh.
+            isLoading: false,
+            isAuthenticated: false,
 
-    fetchUser: async () => {
+            fetchUser: async () => {
         try {
             set({ isLoading: true })
             const { apiFetch } = await import('@/lib/api')
@@ -71,9 +77,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     id: profile.id,
                     fullName: profile.full_name,
                 email: profile.email,
-                nomorInduk: profile.nomor_induk || null,
-                alamat: profile.alamat || null,
-                nomorDarurat: profile.nomor_darurat || null,
+                    nomorInduk: profile.nomor_induk || null,
+                    alamat: profile.alamat || null,
+                    noHp: profile.no_hp || null,
                 avatarUrl: profile.avatar_url,
                     baseRole: profile.base_role as BaseRole,
                     dynamicPermissions: (profile.dynamic_permissions || []).map(
@@ -100,6 +106,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     logout: async () => {
         const supabase = createClient()
         await supabase.auth.signOut()
+        // Clear session cache from api.ts
+        const { clearSessionCache } = await import('@/lib/api')
+        clearSessionCache()
         set({ user: null, isAuthenticated: false, isLoading: false })
     },
 
@@ -124,4 +133,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         if (user.baseRole === 'admin') return true
         return permissions.some((p) => user.dynamicPermissions.includes(p))
     },
-}))
+        }),
+        {
+            name: 'auth-storage',
+            // Use sessionStorage instead of localStorage for better security
+            // Data persists across page refreshes but cleared when tab closes
+            storage: {
+                getItem: (name) => {
+                    if (typeof window === 'undefined') return null
+                    const str = sessionStorage.getItem(name)
+                    return str ? JSON.parse(str) : null
+                },
+                setItem: (name, value) => {
+                    if (typeof window === 'undefined') return
+                    sessionStorage.setItem(name, JSON.stringify(value))
+                },
+                removeItem: (name) => {
+                    if (typeof window === 'undefined') return
+                    sessionStorage.removeItem(name)
+                },
+            },
+            // Only persist user state, not loading/error states
+            partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }) as AuthState,
+        }
+    )
+)

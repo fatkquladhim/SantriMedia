@@ -1,17 +1,41 @@
 // src/lib/api.ts
 import { createClient } from '@/lib/supabase/client';
 
+// ===== Session Cache =====
+// Supabase getSession() adds ~50-100ms per call. We cache it for 50s
+// (well within the 1hr token lifetime) to avoid redundant round-trips.
+let _sessionCache: { token: string; expiresAt: number } | null = null;
+
+async function getCachedToken(): Promise<string | null> {
+    const now = Date.now();
+    if (_sessionCache && now < _sessionCache.expiresAt) {
+        return _sessionCache.token;
+    }
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+        _sessionCache = null;
+        return null;
+    }
+    _sessionCache = { token: session.access_token, expiresAt: now + 50_000 };
+    return _sessionCache.token;
+}
+
+/** Call this on logout to clear the cached session token. */
+export function clearSessionCache() {
+    _sessionCache = null;
+}
+
 /**
  * Custom fetch wrapper that automatically attaches the user's Supabase JWT
  * to the Authorization header when calling the backend API.
  */
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const token = await getCachedToken();
 
     const headers = new Headers(options.headers);
-    if (session?.access_token) {
-        headers.set('Authorization', `Bearer ${session.access_token}`);
+    if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
     }
 
     // Set default content type if not provided
@@ -27,6 +51,30 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         ...options,
         headers,
     });
+
+    // If 401, token may have been rotated — clear cache and retry once
+    if (response.status === 401) {
+        _sessionCache = null;
+        const freshToken = await getCachedToken();
+        if (freshToken) {
+            headers.set('Authorization', `Bearer ${freshToken}`);
+            const retryResponse = await fetch(url, { ...options, headers });
+            const retryData = await retryResponse.json().catch(() => null);
+            if (!retryResponse.ok) {
+                throw {
+                    status: retryResponse.status,
+                    message: retryData?.message || retryResponse.statusText,
+                    errors: retryData?.errors,
+                };
+            }
+            return retryData;
+        }
+        // No fresh token available — session truly expired, throw so callers can redirect
+        throw {
+            status: 401,
+            message: 'Sesi Anda telah berakhir. Silakan login kembali.',
+        };
+    }
 
     const data = await response.json().catch(() => null);
 

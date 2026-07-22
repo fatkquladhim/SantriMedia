@@ -46,13 +46,12 @@ export function Header() {
                     table: 'notifications',
                     filter: `user_id=eq.${user.id}`
                 },
-                (payload) => {
-                    console.log('New notification received!', payload);
-                    fetchNotifs(); 
-                    
-                    // Trigger "ping" animation
+                () => {
+                    fetchNotifs()
+                    // Trigger "ping" animation — clear previous timer to avoid stacking
                     setIsPinging(true)
-                    setTimeout(() => setIsPinging(false), 2000)
+                    const t = setTimeout(() => setIsPinging(false), 2000)
+                    return () => clearTimeout(t)
                 }
             )
             .subscribe();

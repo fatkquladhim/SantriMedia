@@ -16,10 +16,12 @@ export default function AdminMasterDivisiPage() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [newDivisi, setNewDivisi] = useState({ nama: '', deskripsi: '' })
     const [editingDivisi, setEditingDivisi] = useState<any>(null)
+    const [mutationError, setMutationError] = useState<string | null>(null)
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
+        setMutationError(null)
         try {
             if (editingDivisi) {
                 await apiFetch(`/divisi/${editingDivisi.id}`, {
@@ -36,8 +38,8 @@ export default function AdminMasterDivisiPage() {
             setNewDivisi({ nama: '', deskripsi: '' })
             setEditingDivisi(null)
             fetchData()
-        } catch (err) {
-            console.error(err)
+        } catch (err: any) {
+            setMutationError(err?.message || 'Gagal menyimpan divisi.')
         } finally {
             setIsSubmitting(false)
         }
@@ -45,19 +47,19 @@ export default function AdminMasterDivisiPage() {
 
     const handleEdit = (d: any) => {
         setEditingDivisi(d)
+        setMutationError(null)
         setNewDivisi({ nama: d.nama, deskripsi: d.deskripsi || '' })
         setIsModalOpen(true)
     }
 
     const handleDelete = async (id: string) => {
         if (!confirm('Apakah Anda yakin ingin menghapus divisi ini?')) return
+        setMutationError(null)
         try {
-            await apiFetch(`/divisi/${id}`, {
-                method: 'DELETE'
-            })
+            await apiFetch(`/divisi/${id}`, { method: 'DELETE' })
             fetchData()
-        } catch (err) {
-            console.error(err)
+        } catch (err: any) {
+            setMutationError(err?.message || 'Gagal menghapus divisi.')
         }
     }
 
@@ -130,10 +132,10 @@ export default function AdminMasterDivisiPage() {
                 </Button>
             </div>
 
-            {error && (
+            {(error || mutationError) && (
                 <div className="p-4 rounded-xl bg-rose-50/80 backdrop-blur-sm border border-rose-200 text-rose-700 flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 shadow-sm">
                     <AlertCircle size={20} />
-                    <p className="text-sm font-medium">{error}</p>
+                    <p className="text-sm font-medium">{mutationError || error}</p>
                 </div>
             )}
 

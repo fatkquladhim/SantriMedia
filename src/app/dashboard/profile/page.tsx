@@ -22,7 +22,11 @@ export default function ProfilePage() {
     const { user, fetchUser } = useAuthStore()
     
     // Fetch data for portfolio & options
-    const { data: portfolioData, isLoading: isPortfolioLoading } = useApi(`/tasks?assigned_to=${user?.id}&status=done`, { immediate: !!user })
+    // Guard: only fetch when user.id is a real UUID
+    const { data: portfolioData, isLoading: isPortfolioLoading } = useApi(
+        user?.id ? `/tasks?assigned_to=${user.id}&status=done` : '',
+        { immediate: !!user?.id }
+    )
     const { data: divisionsData } = useApi('/divisi')
     const { data: asramaData } = useApi('/asrama')
 
@@ -33,16 +37,18 @@ export default function ProfilePage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
-    const [formData, setFormData] = useState({
-        fullName: user?.fullName || '',
-        bio: (user as any).bio || '',
-        divisiId: user?.divisiId || '',
-        asramaId: user?.asramaId || '',
-        alamat: (user as any).alamat || '',
-        nomorDarurat: (user as any).nomorDarurat || '',
-        avatarUrl: user?.avatarUrl || ''
-    })
 
+    // Guard: user must exist before any access. formData is initialised safely
+    // with optional chaining so we never crash if user is null during hydration.
+    const [formData, setFormData] = useState({
+        fullName: user?.fullName ?? '',
+        bio: user?.bio ?? '',
+        divisiId: user?.divisiId ?? '',
+        asramaId: user?.asramaId ?? '',
+        alamat: user?.alamat ?? '',
+        noHp: user?.noHp ?? '',
+        avatarUrl: user?.avatarUrl ?? '',
+    })
     if (!user) return null
 
     const xpToNextLevel = 1000
@@ -81,17 +87,24 @@ export default function ProfilePage() {
         try {
             await apiFetch('/users/me', {
                 method: 'PATCH',
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    full_name: formData.fullName,
+                    bio: formData.bio,
+                    divisi_id: formData.divisiId || null,
+                    asrama_id: formData.asramaId || null,
+                    alamat: formData.alamat || null,
+                    no_hp: formData.noHp || null,
+                    avatar_url: formData.avatarUrl || null,
+                })
             })
             // Refresh session so JWT claim is_profile_complete updates
             const { createClient } = await import('@/lib/supabase/client')
             const supabase = createClient()
             await supabase.auth.refreshSession()
-            await fetchUser() // Refresh local store
+            await fetchUser()
             setIsEditModalOpen(false)
-        } catch (err) {
-            console.error('Update failed:', err)
-            alert('Gagal memperbarui profil.')
+        } catch (err: any) {
+            alert(err?.message || 'Gagal memperbarui profil.')
         } finally {
             setIsSubmitting(false)
         }
@@ -100,8 +113,8 @@ export default function ProfilePage() {
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
             
-            {/* Warning if profile incomplete */}
-            {!user.isProfileComplete && (
+            {/* Warning if profile incomplete — admin tidak perlu melengkapi profil */}
+            {!user.isProfileComplete && user.baseRole !== 'admin' && (
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-[30px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-amber-500/5">
                     <div className="flex items-center gap-4 text-amber-600">
                         <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20">
@@ -325,7 +338,7 @@ export default function ProfilePage() {
 
                     <div className="grid md:grid-cols-2 gap-6">
                         <Input label="Alamat" value={formData.alamat} onChange={(e) => setFormData(p => ({ ...p, alamat: e.target.value }))} />
-                        <Input label="Nomor Darurat" value={formData.nomorDarurat} onChange={(e) => setFormData(p => ({ ...p, nomorDarurat: e.target.value }))} />
+                        <Input label="Nomor HP" placeholder="08123456789" value={formData.noHp} onChange={(e) => setFormData(p => ({ ...p, noHp: e.target.value }))} />
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
