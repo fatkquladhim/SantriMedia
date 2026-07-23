@@ -52,10 +52,12 @@ export async function updateSession(request: NextRequest) {
     // Read profile completeness from JWT claims (injected by custom_access_token_hook)
     // Falls back to DB query if claim is missing (e.g., old tokens)
     const isProfileComplete = (user as any)?.user_metadata?.is_profile_complete ?? false;
+    const role = (user as any)?.user_metadata?.role;
+    const isAdmin = role === 'admin';
 
     // RULE 3: Profile Completeness Gate
     if (user && !isPublicRoute && pathname !== '/dashboard/profile' && !pathname.startsWith('/auth')) {
-        if (!isProfileComplete) {
+        if (!isProfileComplete && !isAdmin) {
             const url = request.nextUrl.clone()
             url.pathname = '/dashboard/profile'
             return NextResponse.redirect(url)
