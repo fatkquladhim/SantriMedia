@@ -9,8 +9,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 
 export const metadata: Metadata = {
-  title: "ERP Pesantren | Modern Admin",
-  description: "Sistem Manajemen Pesantren Premium",
+  title: "santrimedia",
+  description: "Sistem Manajemen Multimedia Ponpes Annur 2",
 };
 
 import { AuthProvider } from '@/providers/AuthProvider'

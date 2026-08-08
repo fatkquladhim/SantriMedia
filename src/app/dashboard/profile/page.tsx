@@ -327,12 +327,11 @@ export default function ProfilePage() {
 
                     <div className="grid md:grid-cols-2 gap-6">
                         <Input label="Nama Lengkap" value={formData.fullName} onChange={(e) => setFormData(p => ({ ...p, fullName: e.target.value }))} required />
-                        <Select 
-                            label="Divisi Multimedia" 
-                            value={formData.divisiId} 
+                        <Select
+                            label="Divisi Multimedia"
+                            value={formData.divisiId}
                             onChange={(e) => setFormData(p => ({ ...p, divisiId: e.target.value }))}
                             options={[{ value: '', label: '-- Pilih Divisi --' }, ...divisiList.map((d: any) => ({ value: d.id, label: d.nama }))]}
-                            required
                         />
                     </div>
 
@@ -342,12 +341,11 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
-                        <Select 
-                            label="Asrama" 
-                            value={formData.asramaId} 
+                        <Select
+                            label="Asrama"
+                            value={formData.asramaId}
                             onChange={(e) => setFormData(p => ({ ...p, asramaId: e.target.value }))}
                             options={[{ value: '', label: '-- Pilih Asrama --' }, ...asramaList.map((a: any) => ({ value: a.id, label: a.nama }))]}
-                            required
                         />
                          <div className="space-y-1">
                             <label className="text-sm font-bold text-slate-700">Bio Singkat</label>

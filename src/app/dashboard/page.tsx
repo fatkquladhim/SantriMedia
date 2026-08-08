@@ -58,7 +58,24 @@ export default function DashboardOverview() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
-    const [form, setForm] = useState({ judul: '', deskripsi: '', priority: 'medium', poin: 10, assigned_to: '', deadline: '' })
+
+    // Form state persisted to sessionStorage so data survives tab switches and navigation
+    const [form, setForm] = useState(() => {
+        if (typeof window === 'undefined') return { judul: '', deskripsi: '', priority: 'medium', poin: 10, assigned_to: '', deadline: '' }
+        try {
+            const saved = sessionStorage.getItem('draft_task_form')
+            return saved ? JSON.parse(saved) : { judul: '', deskripsi: '', priority: 'medium', poin: 10, assigned_to: '', deadline: '' }
+        } catch {
+            return { judul: '', deskripsi: '', priority: 'medium', poin: 10, assigned_to: '', deadline: '' }
+        }
+    })
+
+    // Auto-save form to sessionStorage on every change
+    useEffect(() => {
+        try {
+            sessionStorage.setItem('draft_task_form', JSON.stringify(form))
+        } catch {}
+    }, [form])
 
     useEffect(() => {
         if (!user) return
@@ -110,6 +127,7 @@ export default function DashboardOverview() {
             showNotif('Tugas berhasil ditambahkan')
             setIsModalOpen(false)
             setForm({ judul: '', deskripsi: '', priority: 'medium', poin: 10, assigned_to: '', deadline: '' })
+            sessionStorage.removeItem('draft_task_form')
             refreshTasks()
         } catch (err: any) {
             showNotif(err.message || 'Gagal', 'error')

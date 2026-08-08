@@ -132,26 +132,10 @@ export const sidebarMenuConfig: SidebarMenuGroup[] = [
         items: [
             {
                 id: 'manage-users',
-                label: 'Kelola Pengguna',
-                icon: Users,
-                href: '/dashboard/admin/users',
-                roles: ['admin'],
-                permissions: ['sdm'],
-            },
-            {
-                id: 'global-izin',
-                label: 'Monitor Izin Global',
-                icon: Moon,
-                href: '/dashboard/admin/izin',
-                roles: ['admin'],
-                permissions: ['staf_kantor'],
-            },
-            {
-                id: 'manage-rbac',
-                label: 'Hak Akses (RBAC)',
+                label: 'Manajemen Akses',
                 icon: Shield,
-                href: '/dashboard/admin/rbac',
-                adminOnly: true,
+                href: '/dashboard/admin/access',
+                roles: ['admin'],
             },
             {
                 id: 'ai-agent',

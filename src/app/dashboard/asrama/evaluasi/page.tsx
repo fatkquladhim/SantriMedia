@@ -29,8 +29,9 @@ export default function EvaluasiAsramaPage() {
             await apiFetch('/evaluasi', {
                 method: 'POST',
                 body: JSON.stringify({
-                    santri_id: selectedSantri.id,
-                    poin_evaluasi: evaluation.point,
+                    siswa_id: selectedSantri.id,
+                    skor: { A: 90, B: 75, C: 60, D: 45 }[evaluation.point] || 0,
+                    kategori: evaluation.point,
                     catatan: evaluation.catatan,
                     bulan_evaluasi: new Date().toISOString().substring(0, 7)
                 })

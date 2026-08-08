@@ -59,8 +59,10 @@ export function useApi<T = any>(
         if (!immediate) return false
         const entry = apiCache.get(initialEndpoint)
         if (!entry) return true
-        // Already have usable data — no spinner needed
-        return Date.now() - entry.fetchedAt >= STALE_TTL_MS
+        // If cache is fresh or stale, no loading needed (data already seeded)
+        if (Date.now() - entry.fetchedAt < STALE_TTL_MS) return false
+        // Cache is expired - need to fetch but don't block UI
+        return false
     })
     const [error, setError] = useState<string | null>(null)
     const mountedRef = useRef(true)

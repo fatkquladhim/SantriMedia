@@ -8,7 +8,13 @@ import { Button } from '@/components/ui/Button'
 import { Award, TrendingUp, UserCheck, AlertTriangle } from 'lucide-react'
 
 export default function KepegawaianPage() {
-    const { data: staff, isLoading } = useApi('/users?role=sdm,kepala_asrama', { immediate: true })
+    const { data: allUsers, isLoading } = useApi('/users', { immediate: true })
+
+    // Filter users with SDM permission or kepala_asrama role
+    const staff = allUsers?.data?.filter((u: any) =>
+        u.base_role === 'kepala_asrama' ||
+        u.dynamic_permissions?.includes('sdm')
+    ) || []
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -39,7 +45,7 @@ export default function KepegawaianPage() {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardDescription>Staf Aktif Dilayani</CardDescription>
-                        <CardTitle className="text-2xl font-bold">{staff?.data?.length || 0} Orang</CardTitle>
+                        <CardTitle className="text-2xl font-bold">{staff.length || 0} Orang</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center gap-2 text-slate-500 text-sm">
@@ -81,7 +87,7 @@ export default function KepegawaianPage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow><TableCell colSpan={6} className="text-center py-8">Memuat data...</TableCell></TableRow>
-                            ) : staff?.data?.map((u: any) => (
+                            ) : staff.map((u: any) => (
                                 <TableRow key={u.id}>
                                     <TableCell className="font-medium">{u.full_name}</TableCell>
                                     <TableCell>{u.divisi?.nama || '-'}</TableCell>
