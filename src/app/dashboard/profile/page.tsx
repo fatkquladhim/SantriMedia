@@ -1,7 +1,7 @@
 // src/app/dashboard/profile/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import { useApi } from '@/hooks/useApi'
 import { apiFetch } from '@/lib/api'
