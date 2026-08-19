@@ -6,6 +6,7 @@ export interface ButtonProps
     variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'success'
     size?: 'default' | 'sm' | 'lg' | 'icon'
     isLoading?: boolean
+    tooltip?: string
 }
 
 const variants = {
@@ -19,10 +20,11 @@ const variants = {
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = "default", size = "default", isLoading = false, children, ...props }, ref) => {
+    ({ className, variant = "default", size = "default", isLoading = false, tooltip, children, ...props }, ref) => {
         return (
             <button
                 ref={ref}
+                title={tooltip}
                 disabled={isLoading || props.disabled}
                 className={cn(
                     "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors",

@@ -37,6 +37,7 @@ export default function ProfilePage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
+    const [submitError, setSubmitError] = useState<string | null>(null)
 
     // Guard: user must exist before any access. formData is initialised safely
     // with optional chaining so we never crash if user is null during hydration.
@@ -49,6 +50,23 @@ export default function ProfilePage() {
         noHp: user?.noHp ?? '',
         avatarUrl: user?.avatarUrl ?? '',
     })
+
+    // Sync form state from store when modal opens
+    useEffect(() => {
+        if (isEditModalOpen && user) {
+            setFormData({
+                fullName: user.fullName ?? '',
+                bio: user.bio ?? '',
+                divisiId: user.divisiId ?? '',
+                asramaId: user.asramaId ?? '',
+                alamat: user.alamat ?? '',
+                noHp: user.noHp ?? '',
+                avatarUrl: user.avatarUrl ?? '',
+            })
+            setSubmitError(null)
+        }
+    }, [isEditModalOpen, user])
+
     if (!user) return null
 
     const xpToNextLevel = 1000
@@ -83,6 +101,7 @@ export default function ProfilePage() {
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
+        setSubmitError(null)
 
         try {
             await apiFetch('/users/me', {
@@ -104,7 +123,8 @@ export default function ProfilePage() {
             await fetchUser()
             setIsEditModalOpen(false)
         } catch (err: any) {
-            alert(err?.message || 'Gagal memperbarui profil.')
+            const msg = err?.message || 'Gagal memperbarui profil.'
+            setSubmitError(msg)
         } finally {
             setIsSubmitting(false)
         }
@@ -301,6 +321,12 @@ export default function ProfilePage() {
             {/* MODAL: Edit Profile */}
             <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Update Personal Profile" size="lg">
                 <form onSubmit={handleUpdateProfile} className="space-y-8 py-4">
+                    {submitError && (
+                        <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-800 text-sm flex gap-3">
+                            <AlertCircle size={18} className="shrink-0" />
+                            {submitError}
+                        </div>
+                    )}
                     {/* Visual Photo Upload Choice */}
                     <div className="flex flex-col items-center gap-4 pb-4 border-b border-slate-50">
                         <div className="relative group/edit">

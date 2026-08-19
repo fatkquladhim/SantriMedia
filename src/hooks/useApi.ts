@@ -50,8 +50,7 @@ export function useApi<T = any>(
     const getCachedData = (): T | null => {
         const entry = apiCache.get(initialEndpoint)
         if (!entry) return initialData ?? null
-        const age = Date.now() - entry.fetchedAt
-        return age < STALE_TTL_MS ? (entry.data as T) : (initialData ?? null)
+        return entry.data as T
     }
 
     const [data, setData] = useState<T | null>(getCachedData)
@@ -59,9 +58,6 @@ export function useApi<T = any>(
         if (!immediate) return false
         const entry = apiCache.get(initialEndpoint)
         if (!entry) return true
-        // If cache is fresh or stale, no loading needed (data already seeded)
-        if (Date.now() - entry.fetchedAt < STALE_TTL_MS) return false
-        // Cache is expired - need to fetch but don't block UI
         return false
     })
     const [error, setError] = useState<string | null>(null)

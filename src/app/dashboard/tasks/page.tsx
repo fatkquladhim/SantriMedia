@@ -209,6 +209,9 @@ function KanbanView() {
     const [selectedTask, setSelectedTask] = useState<any>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [evidenceUrl, setEvidenceUrl] = useState('')
+    const [evidenceTab, setEvidenceTab] = useState<'link' | 'file'>('link')
+    const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
+    const [isUploading, setIsUploading] = useState(false)
 
     useEffect(() => { if (user) fetchData() }, [user, fetchData])
 
@@ -237,13 +240,36 @@ function KanbanView() {
         if (!selectedTask) return
         setIsSubmitting(true)
         try {
-            await apiFetch(`/tasks/${selectedTask.id}/evidence`, { method: 'PUT', body: JSON.stringify({ evidence_url: evidenceUrl }) })
+            let finalUrl = evidenceUrl
+            if (evidenceTab === 'file' && evidenceFile) {
+                setIsUploading(true)
+                const formData = new FormData()
+                formData.append('file', evidenceFile)
+                const res = await apiFetch('/upload/evidence', {
+                    method: 'POST',
+                    body: formData,
+                })
+                finalUrl = (res as any).url || (res.data as any)?.url
+                setIsUploading(false)
+            }
+            if (!finalUrl) {
+                showNotification('Lampirkan file atau link bukti', 'error')
+                return
+            }
+            await apiFetch(`/tasks/${selectedTask.id}/evidence`, { method: 'PUT', body: JSON.stringify({ evidence_url: finalUrl }) })
             showNotification('Bukti kerja berhasil dikirim')
             setIsEvidenceModalOpen(false)
             setEvidenceUrl('')
+            setEvidenceFile(null)
+            setEvidenceTab('link')
             fetchData()
         } catch (err: any) { showNotification(err.message || 'Gagal', 'error') }
-        finally { setIsSubmitting(false) }
+        finally { setIsSubmitting(false); setIsUploading(false) }
+    }
+
+    const handleEvidenceFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) setEvidenceFile(file)
     }
 
     const getPriorityColor = (p: string) => ({
@@ -376,16 +402,28 @@ function KanbanView() {
             <Modal isOpen={isEvidenceModalOpen} onClose={() => setIsEvidenceModalOpen(false)} title="Kirim Bukti Pekerjaan" size="md">
                 <form onSubmit={handleSubmitEvidence} className="space-y-4">
                     <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 text-blue-800 text-sm flex gap-3">
-                        <AlertCircle size={18} className="shrink-0" />
-                        Lampirkan link bukti hasil pekerjaan (Google Drive, YouTube, Figma).
-                    </div>
-                    <Input label="Link Bukti Kerja" placeholder="https://..." value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} required />
-                    <div className="flex justify-end gap-3">
-                        <Button variant="outline" type="button" onClick={() => setIsEvidenceModalOpen(false)}>Batal</Button>
-                        <Button type="submit" isLoading={isSubmitting}>Kirim Review</Button>
-                    </div>
-                </form>
-            </Modal>
+                                                <AlertCircle size={18} className="shrink-0" />
+                                                Lampirkan bukti hasil pekerjaan (file atau link).
+                                            </div>
+                                            <div className="flex rounded-xl bg-slate-100 p-1">
+                                                <button type="button" onClick={() => setEvidenceTab('link')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${evidenceTab === 'link' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Link Eksternal</button>
+                                                <button type="button" onClick={() => setEvidenceTab('file')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${evidenceTab === 'file' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Upload File</button>
+                                            </div>
+                                            {evidenceTab === 'link' ? (
+                                                <Input label="Link Bukti Kerja" placeholder="https://..." value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} />
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-bold text-slate-700">File Bukti</label>
+                                                    <input type="file" className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm" onChange={handleEvidenceFileChange} accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.zip" />
+                                                    {evidenceFile && <p className="text-xs text-slate-500">{evidenceFile.name} ({(evidenceFile.size / 1024 / 1024).toFixed(1)} MB)</p>}
+                                                </div>
+                                            )}
+                                            <div className="flex justify-end gap-3">
+                                                <Button variant="outline" type="button" onClick={() => setIsEvidenceModalOpen(false)} disabled={isSubmitting || isUploading}>Batal</Button>
+                                                <Button type="submit" isLoading={isSubmitting || isUploading} disabled={isSubmitting || isUploading}>Kirim Review</Button>
+                                            </div>
+                                        </form>
+                                    </Modal>
 
             {/* Modal: Detail */}
             <Modal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} title="Detail Tugas" size="lg">

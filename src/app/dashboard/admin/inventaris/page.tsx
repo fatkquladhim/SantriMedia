@@ -22,7 +22,8 @@ import {
     Clock,
     ClipboardCheck,
     Trash2,
-    Edit2
+    Edit2,
+    Upload
 } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
@@ -35,7 +36,9 @@ export default function AdminInventarisPage() {
     const { data: activeBorrows, isLoading: isLoadingActive, fetchData: fetchActive } = useApi('/inventaris/pinjam?status=approved', { immediate: true })
 
     const [isItemModalOpen, setIsItemModalOpen] = useState(false)
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false)
     const [submitting, setSubmitting] = useState(false)
+    const [importing, setImporting] = useState(false)
     const [editingItem, setEditingItem] = useState<any>(null)
     const [itemForm, setItemForm] = useState({
         nama: '',
@@ -43,6 +46,8 @@ export default function AdminInventarisPage() {
         serial_number: '',
         is_available: true
     })
+    const [importFile, setImportFile] = useState<File | null>(null)
+    const [importResult, setImportResult] = useState<any>(null)
 
     const handleSaveItem = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -107,6 +112,27 @@ export default function AdminInventarisPage() {
             await apiFetch(`/inventaris/${id}`, { method: 'DELETE' })
             fetchCatalog()
         } catch (err) { console.error(err) }
+    }
+
+    const handleImport = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!importFile) return
+        setImporting(true)
+        setImportResult(null)
+        try {
+            const formData = new FormData()
+            formData.append('file', importFile)
+            const res = await apiFetch('/inventaris/import', {
+                method: 'POST',
+                body: formData,
+            })
+            setImportResult(res)
+            fetchCatalog()
+        } catch (err: any) {
+            alert(err.message || 'Gagal import data')
+        } finally {
+            setImporting(false)
+        }
     }
 
     const catalogColumns: ColumnDef<any>[] = [
@@ -188,6 +214,13 @@ export default function AdminInventarisPage() {
                     className="h-14 px-8 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-slate-800 transition-all shadow-xl"
                 >
                     <Plus size={18} /> Daftarkan Alat Baru
+                </Button>
+                <Button 
+                    onClick={() => { setIsImportModalOpen(true); setImportResult(null); setImportFile(null); }}
+                    variant="outline"
+                    className="h-14 px-8 rounded-2xl border-slate-200 text-slate-700 font-black uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-slate-50 transition-all"
+                >
+                    <Upload size={18} /> Import Excel
                 </Button>
             </div>
 
@@ -362,6 +395,40 @@ export default function AdminInventarisPage() {
                          <Button type="submit" isLoading={submitting} className="bg-slate-900 text-white rounded-xl px-8 h-12 font-black uppercase tracking-widest text-[10px] shadow-xl">
                              {editingItem ? 'Update Aset' : 'Simpan ke Katalog'}
                          </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Modal Import */}
+            <Modal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} title="Import Data Alat" size="lg">
+                <form onSubmit={handleImport} className="space-y-6 py-4">
+                    <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 text-blue-800 text-sm flex gap-3">
+                        <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                        Upload file Excel/CSV dengan kolom: <strong>nama, kategori, serial_number, is_available, kondisi, lokasi</strong>.
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-slate-700">File Excel/CSV</label>
+                        <input type="file" accept=".xlsx,.xls,.csv" className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm" onChange={e => setImportFile(e.target.files?.[0] || null)} />
+                        {importFile && <p className="text-xs text-slate-500">{importFile.name}</p>}
+                    </div>
+                    {importResult && (
+                        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-sm space-y-1">
+                            <p className="font-bold text-emerald-800">Import selesai!</p>
+                            <p className="text-emerald-700">{importResult.imported?.length || 0} berhasil diimport</p>
+                            {(importResult.errors?.length || 0) > 0 && (
+                                <div className="mt-2 max-h-32 overflow-y-auto text-xs text-rose-600">
+                                    {(importResult.errors || []).slice(0, 20).map((err: any, i: number) => (
+                                        <div key={i}>Baris {err.row}: {err.error}</div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <div className="flex justify-end gap-3 pt-4 border-t border-slate-50">
+                        <Button type="button" variant="outline" className="rounded-xl h-12" onClick={() => setIsImportModalOpen(false)} disabled={importing}>Tutup</Button>
+                        <Button type="submit" isLoading={importing} className="bg-blue-600 text-white rounded-xl px-8 h-12 font-black uppercase tracking-widest text-[10px] shadow-xl">
+                            <Upload size={16} className="mr-2" /> Import Sekarang
+                        </Button>
                     </div>
                 </form>
             </Modal>
