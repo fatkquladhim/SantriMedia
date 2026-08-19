@@ -404,7 +404,7 @@ export default function AdminInventarisPage() {
                 <form onSubmit={handleImport} className="space-y-6 py-4">
                     <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 text-blue-800 text-sm flex gap-3">
                         <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                        Upload file Excel/CSV dengan kolom: <strong>nama, kategori, serial_number, is_available, kondisi, lokasi</strong>.
+                        Upload file Excel/CSV dengan kolom: <strong>nama, kategori, serial_number, is_available, kondisi, lokasi_penyimpanan</strong>.
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-slate-700">File Excel/CSV</label>
