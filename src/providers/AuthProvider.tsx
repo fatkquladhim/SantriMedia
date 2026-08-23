@@ -29,6 +29,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 import('@/lib/api').then(({ clearSessionCache }) => clearSessionCache())
             } else if (!session) {
                 useAuthStore.getState().setUser(null)
+                // Clear cached API data on sign-out so a different account
+                // does not see the previous user's cached responses.
+                import('@/hooks/useApi').then(({ invalidateCache }) => invalidateCache())
             }
         })
 

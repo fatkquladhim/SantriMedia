@@ -2,7 +2,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuthStore } from '@/stores/authStore'
 import { useApi } from '@/hooks/useApi'
 import { apiFetch } from '@/lib/api'
@@ -30,7 +30,6 @@ const STATUS_STYLE: Record<string, string> = {
 }
 
 export default function DashboardOverview() {
-    const router = useRouter()
     const { user, hasAnyPermission } = useAuthStore()
     const isAdmin = user?.baseRole === 'admin'
     const isKepalaAsrama = user?.baseRole === 'kepala_asrama'
@@ -361,10 +360,10 @@ export default function DashboardOverview() {
                                     <h3 className="text-2xl font-black text-slate-900 tracking-tight">Agenda Saya</h3>
                                 </div>
                                 {(myTasks?.data || []).length > 0 && (
-                                    <button onClick={() => router.push('/dashboard/tasks')}
+                                    <Link href="/dashboard/tasks" prefetch={true}
                                         className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
                                         Lihat semua <ArrowRight size={13} />
-                                    </button>
+                                    </Link>
                                 )}
                             </div>
                             <div className="space-y-3">
@@ -428,10 +427,10 @@ export default function DashboardOverview() {
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={() => router.push('/dashboard/approval/izin')}
+                                <Link href="/dashboard/approval/izin" prefetch={true}
                                     className="mt-auto w-full h-14 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2">
                                     Kelola Izin <ArrowRight size={18} />
-                                </button>
+                                </Link>
                             </div>
                         )}
                     </div>

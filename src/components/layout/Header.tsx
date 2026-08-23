@@ -3,6 +3,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { 
     Menu, Bell, CheckCircle2, ChevronDown, 
     User as UserIcon, Settings, LogOut 
@@ -18,6 +19,7 @@ import { createClient } from '@/lib/supabase/client'
 export function Header() {
     const { toggleMobile } = useSidebarStore()
     const { user, logout } = useAuthStore()
+    const router = useRouter()
     const [isNotifOpen, setIsNotifOpen] = useState(false)
     const [isProfileOpen, setIsProfileOpen] = useState(false)
     const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -91,7 +93,13 @@ export function Header() {
             // For now, let's just do the fetch but ensure linking works.
             await apiFetch(`/notifications/${id}/read`, { method: 'PATCH' })
             fetchNotifs()
-            if (link) window.location.href = link
+            if (link) {
+                if (link.startsWith('/')) {
+                    router.push(link)
+                } else {
+                    window.location.href = link
+                }
+            }
         } catch (err) {
             console.error(err)
         }
@@ -230,6 +238,7 @@ export function Header() {
                             <div className="p-2">
                                 <Link 
                                     href="/dashboard/profile"
+                                    prefetch={true}
                                     onClick={() => setIsProfileOpen(false)}
                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-700 dark:hover:text-blue-400 rounded-xl transition-all"
                                 >
@@ -237,6 +246,7 @@ export function Header() {
                                 </Link>
                                 <Link 
                                     href="/dashboard/settings"
+                                    prefetch={true}
                                     onClick={() => setIsProfileOpen(false)}
                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-700 dark:hover:text-blue-400 rounded-xl transition-all"
                                 >

@@ -183,16 +183,17 @@ export default function InventarisPage() {
                                         {item.is_available ? 'Tersedia' : 'Dipakai'}
                                     </span>
                                 </div>
-                                <h3 className="text-xl font-black text-slate-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tight">
+                                <h3 className="text-xl font-black text-slate-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tight line-clamp-2">
                                     {item.nama}
                                 </h3>
+                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{item.kategori || 'Umum'}</p>
                                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-6">SN: {item.serial_number || 'Unit-Internal'}</p>
                                 
                                 <div className="h-[1px] w-full bg-slate-100 mb-6"></div>
                                 
                                 <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest">
                                     <span className="text-slate-400">Kondisi Alat</span>
-                                    <span className="text-blue-500">Sangat Baik</span>
+                                    <span className="text-blue-500">{item.kondisi || 'Baik'}</span>
                                 </div>
                             </div>
                             <div className={`h-14 flex items-center justify-center font-black text-[10px] uppercase tracking-[0.3em] transition-all ${

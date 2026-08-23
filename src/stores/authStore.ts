@@ -2,6 +2,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { createClient } from '@/lib/supabase/client'
+import { invalidateCache } from '@/hooks/useApi'
 
 // ===== Types =====
 export type BaseRole = 'admin' | 'kepala_asrama' | 'user'
@@ -109,6 +110,8 @@ export const useAuthStore = create<AuthState>()(
         // Clear session cache from api.ts
         const { clearSessionCache } = await import('@/lib/api')
         clearSessionCache()
+        // Clear all cached API data so the next user starts with a fresh state
+        invalidateCache()
         set({ user: null, isAuthenticated: false, isLoading: false })
     },
 

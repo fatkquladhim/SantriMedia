@@ -13,6 +13,7 @@ import {
     Bot,
     BookOpen,
     Settings,
+    Wrench,
     type LucideIcon,
 } from 'lucide-react'
 import type { BaseRole, DynamicPermission } from '@/stores/authStore'
@@ -86,11 +87,10 @@ export const sidebarMenuConfig: SidebarMenuGroup[] = [
                 permissions: ['staf_kantor'],
             },
             {
-                id: 'approval-inventaris',
-                label: 'Kelola Inventaris',
-                icon: Package,
-                href: '/dashboard/admin/inventaris',
-                roles: ['admin'],
+                id: 'staff-alat',
+                label: 'Staff Alat',
+                icon: Wrench,
+                href: '/dashboard/admin/staff-alat',
                 permissions: ['staf_alat'],
             },
             {

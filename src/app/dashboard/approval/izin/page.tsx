@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useApi } from '@/hooks/useApi'
 import { apiFetch } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
@@ -14,6 +16,7 @@ import { id } from 'date-fns/locale'
 import { ColumnDef } from '@tanstack/react-table'
 
 export default function ApprovalIzinPage() {
+    const router = useRouter()
     const { user, hasPermission } = useAuthStore()
     const { data: izinData, isLoading, error, fetchData } = useApi('/izin?mode=management', { immediate: true })
     const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -21,6 +24,12 @@ export default function ApprovalIzinPage() {
     const isAdmin = user?.baseRole === 'admin'
     const isStaf = hasPermission('staf_kantor') || isAdmin
     const isKamar = user?.baseRole === 'kepala_asrama' || isAdmin
+
+    useEffect(() => {
+        if (user && isAdmin) {
+            router.push('/dashboard')
+        }
+    }, [user, isAdmin, router])
 
     const handleAction = async (id: string, action: 'approve' | 'reject') => {
         let catatan = null;
@@ -51,7 +60,9 @@ export default function ApprovalIzinPage() {
                 </div>
                 <h2 className="text-2xl font-black text-slate-800">Akses Ditolak</h2>
                 <p className="text-slate-500 max-w-sm">Mohon maaf, halaman ini hanya dapat diakses oleh Staf Kantor Pesantren.</p>
-                <Button onClick={() => window.location.href = '/dashboard'} className="rounded-xl px-8 bg-slate-800 text-white">Kembali ke Dashboard</Button>
+                <Link href="/dashboard">
+                    <Button className="rounded-xl px-8 bg-slate-800 text-white">Kembali ke Dashboard</Button>
+                </Link>
             </div>
         )
     }
